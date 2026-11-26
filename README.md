@@ -42,3 +42,7 @@ Each run uploads the example through the file chooser and downloads both frames.
 The repository also includes the earlier self-contained editor for direct offline use. [Single-file edition and its tests](docs/single-file-editor.md)
 
 The sample photograph of Chelsea is by Stefan van der Walt and is released under CC0. [Photo credit and source](editor/example/CREDIT.txt)
+
+## License
+
+Nayto’s code is distributed under the [MIT License](LICENSE). Third-party software and media retain their respective terms.
