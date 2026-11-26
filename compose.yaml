@@ -1,0 +1,5 @@
+services:
+  editor:
+    build: .
+    ports:
+      - "127.0.0.1:${FRAME_PORT:-18796}:8000"

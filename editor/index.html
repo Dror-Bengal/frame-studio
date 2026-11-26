@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Frame Studio</title>
+<meta name="description" content="Choose a photo, fit a frame and save a square profile picture.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:,">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px}
+body{
+  font-family:system-ui,-apple-system,sans-serif;
+  background-color:#f0f1f5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='%230033A0' opacity='0.03'%3E%3Cpath d='M20 5l3 5h-6z'/%3E%3Ccircle cx='60' cy='10' r='3'/%3E%3Crect x='8' y='35' width='5' height='5' rx='1'/%3E%3Cpath d='M55 30l4 7h-8z'/%3E%3Ccircle cx='35' cy='22' r='2.5'/%3E%3Crect x='62' y='42' width='4' height='4' rx='1'/%3E%3Cpath d='M38 55l3 5h-6z'/%3E%3Ccircle cx='12' cy='65' r='2'/%3E%3Crect x='55' y='65' width='5' height='5' rx='1'/%3E%3Cpath d='M72 75l3 5h-6z'/%3E%3Ccircle cx='28' cy='72' r='2.5'/%3E%3Cpath d='M48 42l-2 3h4z'/%3E%3C/g%3E%3C/svg%3E");
+  color:#1a1a2e;min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:560px;margin:0 auto;padding:0 16px 48px}
+.hdr{text-align:center;padding:36px 0 28px}
+.hdr-logo{width:240px;height:auto;margin-bottom:8px}
+.hdr p{font-size:.82rem;color:#0033A0;margin-top:2px;font-weight:500;letter-spacing:.5px;opacity:.6}
+.acard{
+  background:#fff;border:none;
+  border-radius:14px;margin-bottom:14px;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,51,160,.06),0 0 0 1px rgba(0,51,160,.06);
+  transition:box-shadow .3s,background .3s;
+}
+.acard.active{box-shadow:0 2px 12px rgba(0,51,160,.1),0 0 0 1px rgba(0,51,160,.12)}
+.acard.done{box-shadow:0 1px 4px rgba(0,51,160,.06),0 0 0 1.5px #C8A84E}
+.ahead{
+  display:flex;align-items:center;gap:12px;padding:16px 20px;
+  cursor:pointer;transition:background .2s;user-select:none;
+}
+.ahead:hover{background:rgba(0,51,160,.02)}
+.astep{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;
+  border:2px solid rgba(0,51,160,.15);color:rgba(0,51,160,.4);
+  transition:all .3s;
+}
+.acard.active .astep{border-color:#0033A0;background:#0033A0;color:#fff}
+.acard.done .astep{border-color:#C8A84E;background:#C8A84E;color:#fff}
+.astep svg{width:12px;height:12px;display:none}
+.acard.done .astep span{display:none}
+.acard.done .astep svg{display:block}
+.atitle{font-size:.92rem;font-weight:600;color:rgba(0,0,0,.4);transition:color .3s;flex:1}
+.acard.active .atitle{color:#0033A0}
+.acard.done .atitle{color:rgba(0,0,0,.45)}
+.asum{display:none;flex-shrink:0;height:34px;width:34px;border-radius:8px;overflow:hidden;border:1.5px solid rgba(0,51,160,.1)}
+.asum img{width:100%;height:100%;object-fit:cover;display:block}
+.acard.done .asum{display:block}
+.achev{flex-shrink:0;width:16px;height:16px;transition:transform .3s}
+.achev svg{width:16px;height:16px;stroke:rgba(0,51,160,.2);fill:none;stroke-width:1.5}
+.acard.active .achev{transform:rotate(180deg)}
+.acard.active .achev svg{stroke:#0033A0}
+.abody{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1),padding .3s;padding:0 20px}
+.acard.active .abody{max-height:900px;padding:0 20px 20px}
+.upzone{
+  border:2px dashed rgba(0,51,160,.15);border-radius:12px;
+  padding:32px 16px;text-align:center;cursor:pointer;
+  transition:all .25s;position:relative;background:#fff;
+}
+.upzone:hover,.upzone.drag{border-color:#0033A0;background:rgba(0,51,160,.02)}
+.upzone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.up-ico{margin-bottom:10px}
+.up-ico svg{width:28px;height:28px;stroke:rgba(0,51,160,.3);fill:none;stroke-width:1.5}
+.up-tx{font-size:.9rem;font-weight:600;color:rgba(0,0,0,.55)}
+.up-ht{font-size:.74rem;color:rgba(0,0,0,.3);margin-top:4px}
+.upzone.done{border-style:solid;border-color:#C8A84E;background:rgba(200,168,78,.04)}
+.upzone.done .up-ico svg{stroke:#C8A84E}
+.upzone.done .up-tx{color:rgba(0,0,0,.75)}
+.pv-wrap{padding:0}
+.tpl-row{display:flex;gap:8px;margin-bottom:14px;justify-content:center}
+.tpl{flex:1;max-width:96px;aspect-ratio:1/1;padding:0;border:2px solid rgba(0,51,160,.12);background:#fff;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s}
+.tpl img{width:100%;height:100%;object-fit:contain;display:block}
+.tpl:hover{border-color:rgba(0,51,160,.3)}
+.tpl.active{border-color:#C8A84E;box-shadow:0 0 0 2px rgba(200,168,78,.25)}
+.pvbox{
+  position:relative;width:100%;margin:0 auto;aspect-ratio:1/1;
+  border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;
+  background:#e8ebf0;box-shadow:0 2px 16px rgba(0,51,160,.1);
+}
+.pvbox:active{cursor:grabbing}
+.pvbox canvas{width:100%;height:100%;display:block}
+.pvhint{text-align:center;margin-top:10px;font-size:.72rem;color:rgba(0,0,0,.3);letter-spacing:.3px}
+.zmbar{display:flex;align-items:center;gap:10px;margin:12px auto 0}
+.zmbar svg{width:14px;height:14px;stroke:rgba(0,51,160,.3);fill:none;stroke-width:1.5;flex-shrink:0}
+.zmbar input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;background:rgba(0,51,160,.1);outline:none}
+.zmbar input::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#0033A0;cursor:pointer;box-shadow:0 1px 4px rgba(0,51,160,.3)}
+.zmbar input::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#0033A0;cursor:pointer;border:none;box-shadow:0 1px 4px rgba(0,51,160,.3)}
+.acts{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.btn-fb{background:#1877F2;color:#fff;box-shadow:0 2px 8px rgba(24,119,242,.25)}
+.btn-fb:hover{background:#166fe0;box-shadow:0 4px 16px rgba(24,119,242,.35);transform:translateY(-1px)}
+.btn-fb svg{fill:#fff;stroke:none}
+.btn-wa{background:#25D366;color:#fff;box-shadow:0 2px 8px rgba(37,211,102,.25)}
+.btn-wa:hover{background:#1ebe5d;box-shadow:0 4px 16px rgba(37,211,102,.35);transform:translateY(-1px)}
+.btn-wa svg{fill:#fff;stroke:none}
+.btn{padding:13px 28px;border:none;border-radius:10px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;letter-spacing:.3px}
+.btn-p{background:#0033A0;color:#fff;box-shadow:0 2px 8px rgba(0,51,160,.2)}
+.btn-p:hover{background:#00297e;box-shadow:0 4px 16px rgba(0,51,160,.3);transform:translateY(-1px)}
+.btn-s{background:#fff;color:rgba(0,0,0,.55);border:1.5px solid rgba(0,51,160,.12)}
+.btn-s:hover{background:rgba(0,51,160,.04);color:#0033A0;border-color:rgba(0,51,160,.25)}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+.ftr{text-align:center;padding:24px 0 8px;margin-top:24px}
+.ftr p{font-size:.7rem;color:rgba(0,51,160,.25);letter-spacing:.8px;font-weight:600;text-transform:uppercase}
+#notice:not(:empty){padding:10px 16px;margin-bottom:12px;background:white;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:wait}
+</style>
+</head>
+<body>
+
+<main class="page">
+<header class="hdr">
+  <img class="hdr-logo" src="assets/wordmark.png" alt="Frame Studio">
+</header>
+<p id="notice" role="status" aria-live="polite"></p>
+<div class="acard active" id="ac1">
+  <div class="ahead" id="ah1">
+    <div class="astep"><span>1</span><svg viewBox="0 0 12 12" fill="none"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="atitle" id="at1"></div>
+    <div class="asum" id="as1"><img id="as1img" alt=""></div>
+    <div class="achev"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+  </div>
+  <div class="abody">
+    <div class="upzone" id="upz">
+      <input type="file" accept="image/*" id="fi" aria-label="Choose a photo">
+      <div class="up-ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div class="up-tx" id="utx"></div>
+      <div class="up-ht" id="uht"></div>
+    </div>
+  </div>
+</div>
+<div class="acard" id="ac2">
+  <div class="ahead" id="ah2">
+    <div class="astep"><span>2</span><svg viewBox="0 0 12 12" fill="none"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="atitle" id="at2"></div>
+    <div class="achev"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+  </div>
+  <div class="abody">
+    <div class="pv-wrap">
+      <div class="tpl-row" id="tplRow">
+        <button class="tpl active" data-i="0" aria-label="Ivory frame" aria-pressed="true" type="button"><img src="assets/ivory.png" alt=""></button>
+        <button class="tpl" data-i="1" aria-label="Teal frame" aria-pressed="false" type="button"><img src="assets/teal.png" alt=""></button>
+      </div>
+      <div class="pvbox" id="box"><canvas id="cv"></canvas></div>
+    </div>
+    <div class="pvhint" id="pvh"></div>
+    <div class="zmbar">
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <input type="range" id="zm" aria-label="Photo zoom" min="0.5" max="3" step="0.05" value="1">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="acts">
+      <button class="btn btn-s" id="brst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg><span id="brst-t"></span></button>
+      <button class="btn btn-p" id="bdl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span id="bdl-t"></span></button>
+      <button class="btn btn-fb" id="bfbs"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>Facebook</button>
+      <button class="btn btn-wa" id="bwas"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp</button>
+    </div>
+  </div>
+</div>
+<footer class="ftr">
+
+  <p id="ftxt"></p>
+</footer>
+</main>
+<script>
+const TEMPLATES=[
+  {src:'assets/ivory.png',w:833,h:833},
+  {src:'assets/teal.png',w:833,h:833}
+];
+(function(){
+'use strict';
+let curT=0;
+let W=TEMPLATES[curT].w,H=TEMPLATES[curT].h;
+const L = {
+  title: 'Frame Studio',
+  s1: 'Choose a photo',
+  s2: 'Frame your photo',
+  utx: 'Choose or drop a photo',
+  uht: 'JPG, PNG or WebP',
+  ok: 'Photo loaded',
+  nw: 'Choose a different photo',
+  hint: 'Drag to reposition your photo',
+  rst: 'Start over',
+  dl: 'Download PNG',
+  full: 'Frame Studio',
+  fn: 'framed-photo'
+};
+document.getElementById('at1').textContent=L.s1;
+document.getElementById('at2').textContent=L.s2;
+document.getElementById('utx').textContent=L.utx;
+document.getElementById('uht').textContent=L.uht;
+document.getElementById('pvh').textContent=L.hint;
+document.getElementById('brst-t').textContent=L.rst;
+document.getElementById('bdl-t').textContent=L.dl;
+document.getElementById('ftxt').textContent=L.full;
+document.title=L.title;
+
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+cv.width=W;cv.height=H;
+
+let photo=null,photoDataUrl=null;
+let overlay=null,overlayLoaded=false;
+let frameRequest=0, photoRequest=0, readingPhoto=false;
+const notice=document.getElementById('notice');
+const exportButtons=['bdl','bfbs','bwas'].map(id=>document.getElementById(id));
+function syncActions(){
+  for(const button of exportButtons) button.disabled=!photo || readingPhoto || !overlayLoaded;
+}
+let px=0,py=0,bs=1,lastZ=1;
+let drag=false,dx0=0,dy0=0,px0=0,py0=0,td=0;
+
+const cards=[document.getElementById('ac1'),document.getElementById('ac2')];
+function openStep(n){
+  cards.forEach((c,i)=>c.classList.toggle('active',i===n));
+  setTimeout(()=>cards[n].scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+function markDone(n){cards[n].classList.add('done');}
+function markUndone(n){cards[n].classList.remove('done');}
+
+document.getElementById('ah1').onclick=()=>openStep(0);
+document.getElementById('ah2').onclick=()=>{if(photo)openStep(1);};
+
+function loadOverlay(){
+  const request=++frameRequest;
+  overlayLoaded=false;
+  overlay=null;
+  syncActions();
+  render();
+  const img=new Image();
+  img.onload=()=>{
+    if(request!==frameRequest)return;
+    overlay=img;
+    overlayLoaded=true;
+    render();
+    syncActions();
+  };
+  img.onerror=()=>{
+    if(request===frameRequest)notice.textContent='Frame could not load. Select it again to retry.';
+  };
+  img.src=TEMPLATES[curT].src;
+}
+function applyTemplate(i){
+  curT=i;
+  notice.textContent='';
+  document.querySelectorAll('#tplRow .tpl').forEach((button,k)=>{
+    button.classList.toggle('active',k===i);
+    button.setAttribute('aria-pressed',String(k===i));
+  });
+  // Both frames use the same canvas, so keep the current crop.
+  loadOverlay();
+}
+document.querySelectorAll('#tplRow .tpl').forEach(b=>{
+  b.onclick=()=>applyTemplate(parseInt(b.dataset.i,10));
+});
+loadOverlay();
+
+const upz=document.getElementById('upz');
+const fi=document.getElementById('fi');
+fi.onchange=e=>{if(e.target.files[0])loadFile(e.target.files[0]);};
+upz.ondragover=e=>{e.preventDefault();upz.classList.add('drag');};
+upz.ondragleave=()=>upz.classList.remove('drag');
+upz.ondrop=e=>{e.preventDefault();upz.classList.remove('drag');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);};
+
+function loadFile(file){
+  const request=++photoRequest;
+  readingPhoto=true;
+  notice.textContent='';
+  syncActions();
+  const fail=()=>{
+    if(request!==photoRequest)return;
+    readingPhoto=false;
+    fi.value='';
+    notice.textContent='This file could not be opened as a photo. Choose another image.';
+    syncActions();
+  };
+  const r=new FileReader();
+  r.onerror=fail;
+  r.onload=e=>{
+    const img=new Image();
+    img.onerror=fail;
+    img.onload=()=>{
+      if(request!==photoRequest)return;
+      readingPhoto=false;
+      photo=img;photoDataUrl=e.target.result;
+      const sc=Math.max(W/photo.width,H/photo.height);
+      bs=sc;px=(W-photo.width*sc)/2;py=(H-photo.height*sc)/2;
+      lastZ=1;document.getElementById('zm').value=1;
+      upz.classList.add('done');
+      document.getElementById('utx').textContent=L.ok;
+      document.getElementById('uht').textContent=L.nw;
+      document.getElementById('as1img').src=photoDataUrl;
+      markDone(0);
+      render();
+      syncActions();
+      openStep(1);
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  if(!photo)return;
+  const z=parseFloat(document.getElementById('zm').value);
+  const sc=bs*z;
+  ctx.drawImage(photo,px,py,photo.width*sc,photo.height*sc);
+  if(overlayLoaded)ctx.drawImage(overlay,0,0,W,H);
+}
+
+const zm=document.getElementById('zm');
+function applyZoom(newZ){
+  newZ=Math.max(.5,Math.min(3,newZ));
+  if(newZ===lastZ){zm.value=newZ;return;}
+  const d=newZ/lastZ;
+  const cx=W/2,cy=H/2;
+  px=cx+(px-cx)*d;py=cy+(py-cy)*d;
+  lastZ=newZ;zm.value=newZ;render();
+}
+zm.oninput=e=>applyZoom(parseFloat(e.target.value));
+
+const box=document.getElementById('box');
+box.onmousedown=e=>{drag=true;dx0=e.clientX;dy0=e.clientY;px0=px;py0=py;e.preventDefault();};
+document.onmousemove=e=>{
+  if(!drag)return;
+  if(e.buttons===0){drag=false;return;}
+  const r=box.getBoundingClientRect(),fx=W/r.width,fy=H/r.height;
+  px=px0+(e.clientX-dx0)*fx;py=py0+(e.clientY-dy0)*fy;
+  render();
+};
+document.onmouseup=()=>{drag=false;};
+window.addEventListener('blur',()=>{drag=false;});
+
+box.addEventListener('touchstart',e=>{
+  if(e.target===cv||e.target===box){
+    if(e.touches.length===1){drag=true;dx0=e.touches[0].clientX;dy0=e.touches[0].clientY;px0=px;py0=py;}
+    else if(e.touches.length===2){td=dist(e.touches);drag=false;}
+    e.preventDefault();
+  }
+},{passive:false});
+box.addEventListener('touchmove',e=>{
+  if(e.touches.length===1&&drag){
+    const r=box.getBoundingClientRect(),fx=W/r.width,fy=H/r.height;
+    px=px0+(e.touches[0].clientX-dx0)*fx;py=py0+(e.touches[0].clientY-dy0)*fy;
+    render();
+  }else if(e.touches.length===2){
+    const nd=dist(e.touches);
+    if(td>0)applyZoom(parseFloat(zm.value)*(nd/td));
+    td=nd;
+  }
+  e.preventDefault();
+},{passive:false});
+box.addEventListener('touchend',e=>{
+  if(e.touches.length===1){
+    drag=true;dx0=e.touches[0].clientX;dy0=e.touches[0].clientY;px0=px;py0=py;td=0;
+  }else{drag=false;td=0;}
+},{passive:false});
+function dist(t){const a=t[0].clientX-t[1].clientX,b=t[0].clientY-t[1].clientY;return Math.sqrt(a*a+b*b);}
+
+box.addEventListener('wheel',e=>{
+  e.preventDefault();
+  applyZoom(parseFloat(zm.value)+(e.deltaY>0?-.05:.05));
+},{passive:false});
+
+function download(blob){
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  link.download=L.fn+'.png';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+function withPNG(action){
+  if(!photo || !overlayLoaded || readingPhoto)return;
+  render();
+  cv.toBlob(blob=>{
+    if(blob) action(blob);
+    else notice.textContent='The PNG could not be created. Please try again.';
+  },'image/png');
+}
+document.getElementById('bdl').onclick=()=>withPNG(download);
+function shareImage(destination){
+  withPNG(async blob=>{
+    const file=new File([blob],L.fn+'.png',{type:'image/png'});
+    try{
+      if(navigator.canShare?.({files:[file]})){
+        await navigator.share({files:[file],title:L.title});
+        return;
+      }
+    }catch(error){
+      if(error.name==='AbortError')return;
+    }
+    download(blob);
+    notice.textContent='PNG saved. You can attach it in '+destination+'.';
+  });
+}
+document.getElementById('bfbs').onclick=()=>shareImage('Facebook');
+document.getElementById('bwas').onclick=()=>shareImage('WhatsApp');
+document.getElementById('brst').onclick=()=>{
+  ++photoRequest;readingPhoto=false;notice.textContent='';
+  photo=null;photoDataUrl=null;px=0;py=0;bs=1;lastZ=1;
+  document.getElementById('zm').value=1;
+  upz.classList.remove('done');
+  document.getElementById('utx').textContent=L.utx;
+  document.getElementById('uht').textContent=L.uht;
+  document.getElementById('as1img').removeAttribute('src');
+  syncActions();fi.value='';ctx.clearRect(0,0,W,H);
+  markUndone(0);markUndone(1);openStep(0);
+};
+})();
+</script>
+
+</body>
+</html>

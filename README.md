@@ -1,34 +1,44 @@
-# Frame Studio
+# Frame Studio · Profile photo frames
 
-Frame a photo and save a square, 833 × 833 PNG. Open **index.html** directly in a browser. The editor includes a generated sample and two frame styles. It works offline and needs no account, build step, or runtime dependencies.
+Pick a photo, position it under a frame and save a square profile picture. The two-step editor runs in the browser. Your photo stays on your device while you edit and download it.
 
-## Try it
+<a href="docs/editor.png"><img src="docs/editor.png" width="340" alt="The original two-step editor with a photo loaded, the teal frame selected, and the Download PNG button"></a>
 
-1. Choose a JPG, PNG, or WebP, or drop it on the editor.
-2. Choose **Mat** or **Orbit**. Drag the picture to position it. Use the zoom slider, scroll wheel, or pinch gesture to scale it. With the preview focused, the arrow keys move the picture. **Reset crop** restores the centered crop.
-3. Use **Download PNG** to save the preview. **Share image** opens the native share sheet on supported browsers. If file sharing is unavailable or denied, the editor downloads the same PNG for attachment. Cancelling the picker keeps the current edit.
+[Open the PNG downloaded from this preview](docs/framed-photo.png)
 
-The photo and its filename stay on the device during editing. The exported file is named **framed-photo.png**. Choosing a destination in the operating system's share sheet transfers the file to that destination.
+## Run the original editor
 
-## Serve locally
-
-To test HTTP or native sharing on localhost, run the following in the project directory, then open <http://127.0.0.1:8000/>.
+With Python 3 installed, run these commands, then open [the editor on this computer](http://localhost:18796).
 
 ```sh
-python3 -m http.server 8000 --bind 127.0.0.1
+git clone https://github.com/Dror-Bengal/frame-studio.git
+cd frame-studio
+python3 -m http.server 18796 --bind 127.0.0.1 --directory editor
 ```
 
-## Browser tests
+Alternatively, run `docker compose up -d --build` in the repository root and open the same address.
 
-Python 3.10+ and Playwright are needed only for the tests. From the project directory on macOS or Linux:
+1. Click **Choose or drop a photo**. You can try the included [sample photo](editor/example/chelsea.png).
+2. Select **Ivory** or **Teal**. Drag the photo and adjust the zoom. Switching frames keeps the crop.
+3. Click **Download PNG**. The browser saves the displayed composition as **framed-photo.png**, at **833 × 833 pixels**.
+
+The portfolio edition uses the original upload panel, frame selector, crop canvas and export controls. Its English labels, logo and frame artwork are neutral. The Facebook and WhatsApp buttons open the device share sheet when file sharing is available. Otherwise they save the PNG for manual attachment.
+
+## Check the export
+
+With the editor running, run these commands from the root:
 
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r tests/requirements.txt
 python -m playwright install chromium webkit
-python -m unittest discover -s tests -v
-BROWSER_ENGINE=webkit python -m unittest discover -s tests -v
+python tests/check_original.py
+BROWSER_ENGINE=webkit python tests/check_original.py --mobile
 ```
 
-Tests generate their own image, compare downloaded PNG bytes with the preview, and verify frame colors and dimensions. They cover crop, zoom, reset, dropping files, invalid images, mobile layout and direct file use. They exercise the browser share API with a test double so they can check the file payload, cancellation and permission failure without sending an image.
+Each run uploads the example through the file chooser and downloads both frames. It opens the saved files, checks their size and border colors, compares the photo pixels against an independently cropped source, and compares each complete PNG to the canvas. It also checks that zoom survives a frame change and that an invalid upload can be replaced. Add `--capture ./captures` to save the screenshot and both downloaded files.
+
+The repository also includes the earlier self-contained editor for direct offline use. [Single-file edition and its tests](docs/single-file-editor.md)
+
+The sample photograph of Chelsea is by Stefan van der Walt and is released under CC0. [Photo credit and source](editor/example/CREDIT.txt)
